@@ -1,11 +1,40 @@
+
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <title>GPT Audio</title>
   </head>
   <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
+    <div id="result"></div>
+    <div id="status"></div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+      const recognition = new webkitSpeechRecognition();
+      recognition.lang = 'en-US'; 
+
+      // Handle recognition result
+      recognition.onresult = event => {
+        const { transcript } = event.results[event.results.length - 1][0];
+        document.getElementById('result').textContent = transcript;
+      
+      };
+
+      // Handle end-of-speech event
+      recognition.onspeechend = () => {
+        document.getElementById('status').textContent = 'Not Listening';
+        setTimeout(()=>{
+          recognition.start();
+        },
+        2000)
+      };
+
+      // Handle start-of-speech event
+      recognition.onstart = () => {
+        document.getElementById('status').textContent = 'Listening...';
+      };
+
+      // Start speech recognition
+      recognition.start();
+    </script>
   </body>
 </html>
