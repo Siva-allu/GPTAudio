@@ -36,7 +36,8 @@
 
       const speechSynthesis = window.speechSynthesis;
       const voice = speechSynthesis.getVoices()[4];
-
+      speechSynthesis.getVoices().forEach(voice => console.log("dsd",voice));
+      console.log("voice",voice);
       // Handle recognition result
       recognition.onresult = async (event) => {
         const { transcript } = event.results[event.results.length - 1][0];
@@ -59,7 +60,7 @@
           document.getElementById('status').textContent = 'Speaking..';
           console.log(responseAudio);
          
-            
+          
           speechSynthesis.speak(responseAudio);
         
           responseAudio.onerror= (error)=>{
