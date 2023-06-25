@@ -3,33 +3,91 @@
 <html>
   <head>
     <title>GPT Audio</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-size: 36px;
+        text-align: center;
+      }
+
+      #result,
+      #status {
+        margin-bottom: 20px;
+      }
+
+      #reset-button {
+        margin-top: 20px;
+        font-size: 24px;
+      }
+    </style>
   </head>
   <body>
     <div id="result"></div>
     <div id="status"></div>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <button id="reset-button" onclick="recognition.start()">Reset</button>
     <script>
+      
       const recognition = new webkitSpeechRecognition();
       recognition.lang = 'en-US'; 
 
+      const speechSynthesis = window.speechSynthesis;
+      const voice = speechSynthesis.getVoices()[4];
+
       // Handle recognition result
-      recognition.onresult = event => {
+      recognition.onresult = async (event) => {
         const { transcript } = event.results[event.results.length - 1][0];
+        console.log(event);
         document.getElementById('result').textContent = transcript;
-      
+        try{
+          const response= await fetch('/GPTresponse',{
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json'
+            },
+              body: JSON.stringify({text:transcript})
+            
+          });
+
+          const responseText= await response.json();
+
+          const responseAudio = new SpeechSynthesisUtterance(responseText.resp);
+          responseAudio.voice = voice;
+          document.getElementById('status').textContent = 'Speaking..';
+          console.log(responseAudio);
+         
+            
+          speechSynthesis.speak(responseAudio);
+        
+          responseAudio.onerror= (error)=>{
+            console.error(error);
+            recognition.start();
+          }
+          responseAudio.onend = ()=>{
+            recognition.start();
+          }
+          responseAudio.onpause=()=>{
+            recognition.start();
+          }
+          
+        } catch(error){
+          console.error(error);
+        } 
+
       };
 
       // Handle end-of-speech event
       recognition.onspeechend = () => {
         document.getElementById('status').textContent = 'Not Listening';
-        setTimeout(()=>{
-          recognition.start();
-        },
-        2000)
+        recognition.stop();
       };
 
       // Handle start-of-speech event
       recognition.onstart = () => {
+        console.log("Speech started");
         document.getElementById('status').textContent = 'Listening...';
       };
 

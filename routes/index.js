@@ -3,7 +3,7 @@ var router = express.Router();
 
 
 const { Configuration, OpenAIApi } = require("openai");
-const configuration = new Configuration({ apiKey: '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'});
+const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY});
 const openai = new OpenAIApi(configuration);
 
 /* GET home page. */
@@ -14,13 +14,16 @@ router.get('/', function(req, res, next) {
 router.post('/GPTresponse',async (req,res) => {
 try{
   const response= await openai.createCompletion({
-    mode:'text-davinci-003',
+    model:'text-davinci-003',
     prompt: req.body.text,
-    temperature: 0.7
+    temperature: 0.5,
+    max_tokens: 30
   })
 
-  //console.log(response);
-  res.json(response);
+  //console.log(response.data.choices[0].text);
+  res.json({
+    resp: response.data.choices[0].text
+  });
 } catch(error){
   console.error(error);
   res.status(500).json({error:"Something Went Wrong"});
@@ -28,5 +31,6 @@ try{
 
 
 })
+
 
 module.exports = router;
