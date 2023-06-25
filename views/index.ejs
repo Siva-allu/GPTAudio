@@ -30,19 +30,22 @@
     <div id="status"></div>
     <button id="reset-button" onclick="recognition.start()">Reset</button>
     <script>
-      
+      // Speech Recognition Varibles
       const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
       recognition.lang = 'en-US'; 
 
+      //Speech Synthesis Variables.
       const speechSynthesis = window.speechSynthesis;
       const voice = speechSynthesis.getVoices()[4];
       
-      // Handle recognition result
+      // Handling recognition result.
       recognition.onresult = async (event) => {
+        // Generated text of input voice.
         const { transcript } = event.results[event.results.length - 1][0];
         console.log(event);
         document.getElementById('result').textContent = transcript;
         try{
+          //Sending Converted Text to GPT
           const response= await fetch('/GPTresponse',{
             method:'POST',
             headers:{
@@ -51,12 +54,12 @@
               body: JSON.stringify({text:transcript})
           });
 
-          const responseText= await response.json();
+          const responseJson= await response.json();
 
-          const responseAudio = new SpeechSynthesisUtterance(responseText.resp);
+          // Converting Response Text To voice
+          const responseAudio = new SpeechSynthesisUtterance(responseJson.resp);
           responseAudio.voice = voice;
           document.getElementById('status').textContent = 'Speaking..';
-          console.log(responseAudio);
          
           speechSynthesis.speak(responseAudio);
         
@@ -64,9 +67,11 @@
             console.error(error);
             recognition.start();
           }
+
           responseAudio.onend = ()=>{
             recognition.start();
           }
+
           responseAudio.onpause=()=>{
             recognition.start();
           }
@@ -77,13 +82,13 @@
 
       };
 
-      // Handle end-of-speech event
+      // Handling end-of-speech event
       recognition.onspeechend = () => {
         document.getElementById('status').textContent = 'Not Listening';
         recognition.stop();
       };
 
-      // Handle start-of-speech event
+      // Handling  start-of-speech event
       recognition.onstart = () => {
         console.log("Speech started");
         document.getElementById('status').textContent = 'Listening...';

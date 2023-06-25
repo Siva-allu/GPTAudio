@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 
-
+// Configuration OpenAI  API
 const { Configuration, OpenAIApi } = require("openai");
 const configuration = new Configuration({ apiKey: process.env.OPENAI_KEY});
 const openai = new OpenAIApi(configuration);
@@ -13,6 +13,7 @@ router.get('/', function(req, res, next) {
 
 router.post('/GPTresponse',async (req,res) => {
 try{
+  // Sending POST request with prompt
   const response= await openai.createCompletion({
     model:'text-davinci-003',
     prompt: req.body.text,
@@ -28,8 +29,6 @@ try{
   console.error(error);
   res.status(500).json({error:"Something Went Wrong"});
 }
-
-
 })
 
 
