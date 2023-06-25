@@ -31,13 +31,12 @@
     <button id="reset-button" onclick="recognition.start()">Reset</button>
     <script>
       
-      const recognition = new webkitSpeechRecognition();
+      const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
       recognition.lang = 'en-US'; 
 
       const speechSynthesis = window.speechSynthesis;
       const voice = speechSynthesis.getVoices()[4];
-      speechSynthesis.getVoices().forEach(voice => console.log("dsd",voice));
-      console.log("voice",voice);
+      
       // Handle recognition result
       recognition.onresult = async (event) => {
         const { transcript } = event.results[event.results.length - 1][0];
@@ -50,7 +49,6 @@
               'Content-Type':'application/json'
             },
               body: JSON.stringify({text:transcript})
-            
           });
 
           const responseText= await response.json();
@@ -60,7 +58,6 @@
           document.getElementById('status').textContent = 'Speaking..';
           console.log(responseAudio);
          
-          
           speechSynthesis.speak(responseAudio);
         
           responseAudio.onerror= (error)=>{
